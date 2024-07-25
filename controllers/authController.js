@@ -12,26 +12,26 @@ const usersDB = {
 const signinUser = async (req,res) => {
 
     // get form data
-    const { user,pwd } = req.body
+    const { email,pwd } = req.body
 
     // status 400 bad request
-    if( !user || !pwd ) return res.status(400).json({ message: 'Username and password required!!'})
+    if( !email || !pwd ) return res.status(400).json({ message: 'Username and password required!!'})
 
     try {
-        const foundUser = usersDB.users.find( el => el.username === user)
-        if(!foundUser) return res.sendStatus(401)
+        const foundUser = usersDB.users.find( el => el.email === email)
+        if(!foundUser) return res.status(401).json({ message: 'Email or Password invalid'})
 
         const pwdCheck = await bcrypt.compare(pwd, foundUser.pwd)
         if(!pwdCheck) return res.sendStatus(401)
 
         const accessToken = jwt.sign(
-            { username: foundUser.username },
+            { email: foundUser.email },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '45s'}
         )
         
         const refreshToken = jwt.sign(
-            { username: foundUser.username },
+            { email: foundUser.email },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d'}
         )
@@ -40,7 +40,7 @@ const signinUser = async (req,res) => {
             token: refreshToken 
         }
 
-        const otherUsers = usersDB.users.filter(el => el.username !== foundUser.username)
+        const otherUsers = usersDB.users.filter(el => el.email !== foundUser.email)
         usersDB.setUsers([...otherUsers, updatedUser]);
 
         await fsPromises.writeFile(
@@ -49,7 +49,7 @@ const signinUser = async (req,res) => {
         )
 
         res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }) //sameSite: 'None' secure: true 
-        return res.status(200).json({ message: 'SignIn successfull', username: foundUser.username, token: accessToken })
+        return res.status(200).json({ message: 'SignIn successfull', email: foundUser.email, token: accessToken })
 
     } catch (error) {
         return res.status(500).json({ message: error.message })
@@ -59,23 +59,23 @@ const signinUser = async (req,res) => {
 const signupUser = async (req,res) => {
     
     // get form data
-    const { user,pwd } = req.body
+    const { email,pwd } = req.body
 
     // Bad Request
-    if( !user || !pwd ) return res.status(400).json({ message: 'User & Password are required!!'})
+    if( !email || !pwd ) return res.status(400).json({ message: 'email & password are required!!'})
     
     // Check for duplicate names
-    const duplicate = usersDB.users.find( el => el.username === user)
+    const duplicate = usersDB.users.find( el => el.email === email)
   
     // Conflict username
-    if(duplicate) return res.status(409).json({ message: `Username: ${user} already exist`})
+    if(duplicate) return res.status(409).json({ message: `Email: ${email} already exist`})
 
     try {
         // hash pwd
         const hashPwd = await bcrypt.hash(pwd,10);
     
         // Store new user
-        const newuser = { username:user, pwd:hashPwd }
+        const newuser = { email, pwd:hashPwd }
         usersDB.setUsers([...usersDB.users, newuser]);
 
         await fsPromises.writeFile(
@@ -83,7 +83,7 @@ const signupUser = async (req,res) => {
             JSON.stringify(usersDB.users)
         )
         
-        res.status(201).json({ message: `User ${user} signup successfull!`})
+        res.status(201).json({ message: `User ${email} signup successfull!`})
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -107,9 +107,9 @@ const refreshToken = async (req,res) => {
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
         (err, decoded) => {
-            if(err || foundUser.username !== decoded.username ) return res.sendStatus(403) // invalid token
+            if(err || foundUser.email !== decoded.email ) return res.sendStatus(403) // invalid token
             const accessToken = jwt.sign(
-                { username: decoded.username },
+                { email: decoded.email },
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: '45s'}
             );
