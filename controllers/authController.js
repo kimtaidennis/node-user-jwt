@@ -1,15 +1,17 @@
-const usersDB = {
-    users: require('../models/users.json'),
-    setUsers: function(data) { this.users = data}
-}
-
 const fsPromises = require('fs').promises;
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const path = require('path')
 
+const usersDB = {
+    users: require('../models/users.json'),
+    setUsers: function(data) { this.users = data}
+}
+
 const signinUser = async (req,res) => {
+
+    // get form data
     const { user,pwd } = req.body
 
     // status 400 bad request
@@ -37,20 +39,26 @@ const signinUser = async (req,res) => {
             ...foundUser,
             token: refreshToken 
         }
+
         const otherUsers = usersDB.users.filter(el => el.username !== foundUser.username)
         usersDB.setUsers([...otherUsers, updatedUser]);
+
         await fsPromises.writeFile(
             path.join(__dirname,'..','models','users.json'),
             JSON.stringify(usersDB.users)
         )
+
         res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }) //sameSite: 'None' secure: true 
         return res.status(200).json({ message: 'SignIn successfull', username: foundUser.username, token: accessToken })
+
     } catch (error) {
         return res.status(500).json({ message: error.message })
     }
 }
 
 const signupUser = async (req,res) => {
+    
+    // get form data
     const { user,pwd } = req.body
 
     // Bad Request
@@ -69,21 +77,22 @@ const signupUser = async (req,res) => {
         // Store new user
         const newuser = { username:user, pwd:hashPwd }
         usersDB.setUsers([...usersDB.users, newuser]);
+
         await fsPromises.writeFile(
             path.join(__dirname,'..','models','users.json'),
             JSON.stringify(usersDB.users)
         )
         
         res.status(201).json({ message: `User ${user} signup successfull!`})
-        
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
 }
 
 const refreshToken = async (req,res) => {
+
     const cookies = req.cookies;
-    console.log(cookies);
+    
     // Bad Request
     if( !cookies?.jwt ) return res.sendStatus(401);
     const refreshToken = cookies.jwt;
@@ -110,6 +119,7 @@ const refreshToken = async (req,res) => {
 }
 
 const logoutUser = async (req,res) => {
+
     const cookies = req.cookies;
     
     // Bad Request
@@ -118,6 +128,7 @@ const logoutUser = async (req,res) => {
 
     // Check user by token in db
     const foundUser = usersDB.users.find( el => el.token === refreshToken)
+
     // Conflict username
     if(!foundUser) {
         res.clearCookie('jwt',{httpOnly: true }) //sameSite: 'None', secure: true
@@ -128,9 +139,10 @@ const logoutUser = async (req,res) => {
         ...foundUser,
         token: ''
     }
+
     const otherUsers = usersDB.users.filter(el => el.token !== refreshToken)
     usersDB.setUsers([...otherUsers, updatedUser]);
-    console.log(usersDB.setUsers);
+
     await fsPromises.writeFile(
         path.join(__dirname,'..','models','users.json'),
         JSON.stringify(usersDB.users)
@@ -138,7 +150,6 @@ const logoutUser = async (req,res) => {
         
     res.clearCookie('jwt',{ httpOnly: true, secure: true })
     res.sendStatus(204)
-
 }
 
 module.exports = { 
