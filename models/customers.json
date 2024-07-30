@@ -1,0 +1,6 @@
+[
+    { "id":1, "name": "John Doe", "phone":25765796835, "main": 0, "bonus":1000, "created_at":"2024-04-08 08:22:54", "country":"BI"},
+    { "id":2, "name": "Sammy Link", "phone":25765796835, "main": 800, "bonus":1000, "created_at":"2024-04-08 08:22:54", "country":"KE"},
+    { "id":3, "name": "Lilian Smith", "phone":25765796835, "main": 4500, "bonus":1000, "created_at":"2024-04-08 08:22:54", "country":"KE"}
+    
+]

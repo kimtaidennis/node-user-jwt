@@ -42,6 +42,7 @@ app.use('/logout', require('./routes/logout') );
 app.use('/signup', require('./routes/signup') );
 app.use('/refresh-token', require('./routes/refresh') );
 app.use('/employees', require('./routes/api/employees') );
+app.use('/customers', require('./routes/api/customers') );
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -51,7 +52,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
 });
 
 app.use(errorHandler);

@@ -1,1 +1,7 @@
-[{"email":"johndoe@mail.com","pwd":"$2b$10$3AEQvNVhogMrtQu2fedVeuTeASwpzKMAbgMAltIeEFh29ArQ7nhi6"},{"email":"admin@mail.com","pwd":"$2b$10$lYyRL//LCOzJZT3hYc5c5.BxczWjBRqytKi16wRmWrvKj1G4qA8hu","token":""},{"email":"johndoe@rahisibet.com","pwd":"$2b$10$50YInUdmRNnl36Wymn3wvORjXOIw9t/S30UjQwk1XlvGOFz.iLzA2","token":""}]
+[
+  {
+    "email": "johndoe@rahisibet.com",
+    "pwd": "$2b$10$50YInUdmRNnl36Wymn3wvORjXOIw9t/S30UjQwk1XlvGOFz.iLzA2",
+    "token": ""
+  }
+]
